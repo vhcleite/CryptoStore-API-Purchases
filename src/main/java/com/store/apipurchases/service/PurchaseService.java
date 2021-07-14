@@ -1,9 +1,11 @@
 package com.store.apipurchases.service;
 
 import com.store.apipurchases.exceptions.CryptoStoreException;
+import com.store.apipurchases.integration.service.UserService;
 import com.store.apipurchases.model.PurchaseEntity;
 import com.store.apipurchases.model.dto.PurchasePostDto;
 import com.store.apipurchases.repository.PurchaseRepository;
+import com.store.apipurchases.validations.postPurchase.PostPurchaseValidation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -12,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 
 @Service
@@ -21,11 +22,14 @@ public class PurchaseService {
     private static final ModelMapper modelMapper = new ModelMapper();
     private final PurchaseRepository purchaseRepository;
 
-    @Value("payment.expiration.days")
-    private Long expirationDays;
+    @Value("${payment.expiration.days}")
+    public Long expirationDays;
 
-    public PurchaseService(PurchaseRepository purchaseRepository) {
+    private List<PostPurchaseValidation> validations;
+
+    public PurchaseService(PurchaseRepository purchaseRepository, List<PostPurchaseValidation> validations) {
         this.purchaseRepository = purchaseRepository;
+        this.validations = validations;
     }
 
     public List<PurchaseEntity> getPurchases(String userId) {
@@ -39,10 +43,8 @@ public class PurchaseService {
     public PurchaseEntity create(String userId, PurchasePostDto purchaseDto) {
         LocalDateTime now = LocalDateTime.now();
 
-        // verificar se o userId é válido
-        // verificar se o contentId é válido
-        // verificar se o produto já nao foi comprado
-        // verificar se o produto já não venceu
+        validations.forEach(v -> v.validate(userId, purchaseDto));
+        // verificar se compra é duplicadas
 
         PurchaseEntity purchase = modelMapper.map(purchaseDto, PurchaseEntity.class);
         purchase.setPurchaseId(null);
@@ -50,5 +52,9 @@ public class PurchaseService {
         purchase.setCreationTimestamp(now);
         purchase.setExpirationTimestamp(now.plus(expirationDays, ChronoUnit.DAYS));
         return purchaseRepository.save(purchase);
+    }
+
+    public PurchaseEntity findOpenPurchasesBy(String userId, Long contentId) {
+        return purchaseRepository.findByUserIdAndContentIdAndPaymentTimestampIsNullAndExpirationTimestampGreaterThan(userId, contentId, LocalDateTime.now());
     }
 }
