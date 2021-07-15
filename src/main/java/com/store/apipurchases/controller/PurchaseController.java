@@ -1,6 +1,7 @@
 package com.store.apipurchases.controller;
 
 import com.store.apipurchases.model.PurchaseEntity;
+import com.store.apipurchases.model.dto.PurchaseGetDto;
 import com.store.apipurchases.model.dto.PurchasePostDto;
 import com.store.apipurchases.service.PurchaseService;
 import com.sun.istack.NotNull;
@@ -24,7 +25,7 @@ public class PurchaseController {
     }
 
     @GetMapping("/{userId}/purchase")
-    public ResponseEntity<List<PurchaseEntity>> getByUserId(@PathVariable(name = "userId") @NotNull String UserId) {
+    public ResponseEntity<List<PurchaseGetDto>> getByUserId(@PathVariable(name = "userId") @NotNull String UserId) {
         return new ResponseEntity<>(purchaseService.getPurchases(UserId), HttpStatus.OK);
     }
 

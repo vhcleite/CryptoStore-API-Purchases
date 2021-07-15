@@ -3,6 +3,7 @@ package com.store.apipurchases.service;
 import com.store.apipurchases.exceptions.CryptoStoreException;
 import com.store.apipurchases.integration.service.UserService;
 import com.store.apipurchases.model.PurchaseEntity;
+import com.store.apipurchases.model.dto.PurchaseGetDto;
 import com.store.apipurchases.model.dto.PurchasePostDto;
 import com.store.apipurchases.repository.PurchaseRepository;
 import com.store.apipurchases.validations.postPurchase.PostPurchaseValidation;
@@ -15,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PurchaseService {
@@ -32,19 +34,18 @@ public class PurchaseService {
         this.validations = validations;
     }
 
-    public List<PurchaseEntity> getPurchases(String userId) {
+    public List<PurchaseGetDto> getPurchases(String userId) {
         List<PurchaseEntity> purchases = purchaseRepository.findByUserId(userId);
         if(CollectionUtils.isEmpty(purchases)) {
             throw new CryptoStoreException(HttpStatus.NO_CONTENT, "Usuário não efetuou compras ainda");
         }
-        return purchases;
+        return purchases.stream().map(p -> modelMapper.map(p, PurchaseGetDto.class)).collect(Collectors.toList());
     }
 
     public PurchaseEntity create(String userId, PurchasePostDto purchaseDto) {
         LocalDateTime now = LocalDateTime.now();
 
         validations.forEach(v -> v.validate(userId, purchaseDto));
-        // verificar se compra é duplicadas
 
         PurchaseEntity purchase = modelMapper.map(purchaseDto, PurchaseEntity.class);
         purchase.setPurchaseId(null);
