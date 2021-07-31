@@ -11,4 +11,6 @@ public interface PurchaseRepository extends JpaRepository<PurchaseEntity, Long> 
     public List<PurchaseEntity> findByUserId(String userId);
 
     public PurchaseEntity findByUserIdAndContentIdAndPaymentTimestampIsNullAndExpirationTimestampGreaterThan(String userId, Long contentId, LocalDateTime now);
+
+    public List<PurchaseEntity> findByExpirationTimestampAfterAndPaymentTimestampIsNull(LocalDateTime now);
 }
