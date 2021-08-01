@@ -38,10 +38,10 @@ public class PurchaseController {
     }
 
     @PostMapping("users/{userId}/purchase")
-    public ResponseEntity<PurchaseEntity> create(@PathVariable(name =  "userId") @NotNull String userId,
+    public ResponseEntity<PurchaseGetDto> create(@PathVariable(name =  "userId") @NotNull String userId,
                                                  @RequestBody @Validated PurchasePostDto purchase) {
-        PurchaseEntity purchaseEntity = purchaseService.create(userId, purchase);
-        return new ResponseEntity<>(purchaseEntity, HttpStatus.CREATED);
+        PurchaseGetDto purchaseDto = purchaseService.create(userId, purchase);
+        return new ResponseEntity<>(purchaseDto, HttpStatus.CREATED);
     }
 
     @PutMapping("users/{userId}/purchase/{purchaseId}")

@@ -45,7 +45,7 @@ public class PurchaseService {
         return purchases.stream().map(p -> modelMapper.map(p, PurchaseGetDto.class)).collect(Collectors.toList());
     }
 
-    public PurchaseEntity create(String userId, PurchasePostDto purchaseDto) {
+    public PurchaseGetDto create(String userId, PurchasePostDto purchaseDto) {
         LocalDateTime now = LocalDateTime.now();
 
         validations.forEach(v -> v.validate(userId, purchaseDto));
@@ -55,7 +55,7 @@ public class PurchaseService {
         purchase.setUserId(userId);
         purchase.setCreationTimestamp(now);
         purchase.setExpirationTimestamp(now.plus(expirationDays, ChronoUnit.DAYS));
-        return purchaseRepository.save(purchase);
+        return modelMapper.map(purchaseRepository.save(purchase), PurchaseGetDto.class);
     }
 
     public PurchaseEntity findOpenPurchasesBy(String userId, Long contentId) {
